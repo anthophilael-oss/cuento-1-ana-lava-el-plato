@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana lava el plato - Libro Digital Interactivo DUA</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Lexend & Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 for visual icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        lexend: ['Lexend', 'sans-serif'],
+                        roboto: ['Roboto', 'sans-serif'],
+                        arial: ['Arial', 'Helvetica', 'sans-serif'],
+                        system: ['ui-sans-serif', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Accessibility & Viewport Lock (No Scrollbar Required) */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Ensures all content fits seamlessly without page scrolling */
+            font-family: 'Lexend', sans-serif;
+            user-select: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Calm Pastel Color Palettes (Mayer Coherence & Visual Stress Reduction) */
+        body.theme-cream { background-color: #FAF7F2; color: #1E293B; }
+        body.theme-sage { background-color: #EBF3ED; color: #1C3323; }
+        body.theme-blue { background-color: #EBF2FA; color: #102A43; }
+        body.theme-peach { background-color: #FDF0ED; color: #3D2219; }
+
+        /* High Contrast Mode (WCAG 2.2 AAA) */
+        body.high-contrast {
+            background-color: #000000 !important;
+            color: #FFFF00 !important;
+        }
+
+        body.high-contrast .hc-card {
+            background-color: #121212 !important;
+            border: 2px solid #FFFF00 !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+        }
+
+        body.high-contrast .hc-text {
+            color: #FFFF00 !important;
+        }
+
+        body.high-contrast .hc-badge {
+            background-color: #FFFF00 !important;
+            color: #000000 !important;
+            font-weight: 900 !important;
+        }
+
+        body.high-contrast .hc-btn {
+            background-color: #000000 !important;
+            color: #FFFF00 !important;
+            border: 2px solid #FFFF00 !important;
+        }
+
+        body.high-contrast .hc-btn:hover, body.high-contrast .hc-btn:focus {
+            background-color: #FFFF00 !important;
+            color: #000000 !important;
+        }
+
+        /* Focus rings for keyboard navigation (WCAG 2.2 AAA) */
+        button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+            outline: 4px solid #F59E0B !important;
+            outline-offset: 2px !important;
+            border-radius: 8px;
+        }
+
+        /* Read-Along Speech Highlight */
+        .speech-reading {
+            background-color: #FEF08A;
+            color: #000000;
+            padding: 2px 6px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        body.high-contrast .speech-reading {
+            background-color: #00E5FF !important;
+            color: #000000 !important;
+        }
+
+        /* Reading Ruler (Renglón de Lectura) Overlay */
+        #readingRulerOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+        }
+
+        .ruler-mask {
+            position: absolute;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.45);
+            transition: height 0.05s ease;
+        }
+
+        #rulerTop { top: 0; }
+        #rulerBottom { bottom: 0; }
+
+        #rulerGuide {
+            position: absolute;
+            width: 100%;
+            height: 64px;
+            box-shadow: 0 0 0 3px #F59E0B, 0 0 15px rgba(245, 158, 11, 0.5);
+            background-color: rgba(254, 240, 138, 0.15);
+            pointer-events: auto;
+            cursor: grab;
+        }
+
+        #rulerGuide:active {
+            cursor: grabbing;
+        }
+
+        /* Dynamic Font Family Classes */
+        .font-lexend { font-family: 'Lexend', sans-serif !important; }
+        .font-roboto { font-family: 'Roboto', sans-serif !important; }
+        .font-arial { font-family: 'Arial', 'Helvetica', sans-serif !important; }
+        .font-system { font-family: ui-sans-serif, system-ui, sans-serif !important; }
+
+        /* Text Spacing Dynamic Defaults */
+        #pageText {
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+            word-spacing: 0.15em;
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="theme-cream h-full flex flex-col justify-between p-2 sm:p-3 md:p-4">
+
+    <!-- READING RULER (REANGLÓN DE LECTURA) OVERLAY -->
+    <div id="readingRulerOverlay" aria-hidden="true">
+        <div id="rulerTop" class="ruler-mask"></div>
+        <div id="rulerGuide" title="Arrastra este renglón para enfocar la lectura"></div>
+        <div id="rulerBottom" class="ruler-mask"></div>
+    </div>
+
+    <!-- TOP ACCESSIBILITY & CUSTOMIZATION TOOLBAR -->
+    <header class="w-full max-w-6xl mx-auto bg-white hc-card rounded-2xl p-2 sm:p-2.5 shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-2 shrink-0" role="banner">
+        
+        <!-- App Title -->
+        <div class="flex items-center gap-2">
+            <span class="text-2xl" aria-hidden="true">📖</span>
+            <div>
+                <h1 class="text-sm sm:text-base font-extrabold text-stone-800 hc-text leading-tight">Libro DUA</h1>
+                <p class="text-[10px] sm:text-xs font-semibold text-stone-500 hc-text">Ana lava el plato</p>
+            </div>
+        </div>
+
+        <!-- Controls Group -->
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
+            
+            <!-- Pastel Background Theme Selector -->
+            <div class="flex items-center bg-stone-100 hc-card rounded-xl p-1 border border-stone-200" title="Seleccionar fondo pastel relajante">
+                <span class="font-bold px-1 text-stone-600 hc-text text-[11px]"><i class="fa-solid fa-palette mr-1"></i>Fondo:</span>
+                <button onclick="setTheme('theme-cream')" class="w-6 h-6 rounded-full bg-[#FAF7F2] border-2 border-amber-300 hover:scale-110 transition shadow-sm" title="Crema suave"></button>
+                <button onclick="setTheme('theme-sage')" class="w-6 h-6 rounded-full bg-[#EBF3ED] border-2 border-emerald-300 hover:scale-110 transition shadow-sm ml-1" title="Verde menta pastel"></button>
+                <button onclick="setTheme('theme-blue')" class="w-6 h-6 rounded-full bg-[#EBF2FA] border-2 border-blue-300 hover:scale-110 transition shadow-sm ml-1" title="Azul celeste pastel"></button>
+                <button onclick="setTheme('theme-peach')" class="w-6 h-6 rounded-full bg-[#FDF0ED] border-2 border-rose-300 hover:scale-110 transition shadow-sm ml-1" title="Melocotón pastel"></button>
+            </div>
+
+            <!-- Font Family Selector -->
+            <div class="flex items-center bg-stone-100 hc-card rounded-xl p-1 border border-stone-200" title="Cambiar tipo de letra">
+                <span class="font-bold px-1 text-stone-600 hc-text text-[11px]"><i class="fa-solid fa-font mr-1"></i>Fuente:</span>
+                <select id="fontSelect" onchange="changeFontFamily(this.value)" class="bg-white hc-btn rounded-lg px-1.5 py-1 text-xs font-bold border border-stone-300 cursor-pointer">
+                    <option value="font-lexend" selected>Lexend (DUA)</option>
+                    <option value="font-roboto">Roboto</option>
+                    <option value="font-arial">Arial</option>
+                    <option value="font-system">Sans-Serif</option>
+                </select>
+            </div>
+
+            <!-- Reading Ruler Toggle -->
+            <button id="rulerToggleBtn" onclick="toggleReadingRuler()" class="min-h-[36px] px-2.5 py-1 bg-stone-100 hover:bg-stone-200 hc-btn rounded-xl text-xs font-bold border border-stone-300 transition flex items-center gap-1" title="Activar/desactivar renglón enfocador de lectura">
+                <i class="fa-solid fa-ruler-horizontal text-amber-600" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Renglón</span>
+            </button>
+
+            <!-- Text Size (A- / Normal / A+) -->
+            <div class="flex items-center bg-stone-100 hc-card rounded-xl p-0.5 border border-stone-200">
+                <button onclick="adjustFontSize(-2)" class="w-8 h-8 bg-white hc-btn rounded-lg font-black text-xs shadow-sm hover:bg-stone-50 flex items-center justify-center" aria-label="Disminuir tamaño de letra">A-</button>
+                <button onclick="resetTypography()" class="px-1.5 text-[11px] font-bold hc-text hover:underline" title="Restablecer">100%</button>
+                <button onclick="adjustFontSize(2)" class="w-8 h-8 bg-white hc-btn rounded-lg font-black text-sm shadow-sm hover:bg-stone-50 flex items-center justify-center" aria-label="Aumentar tamaño de letra">A+</button>
+            </div>
+
+            <!-- Letter Spacing (Interletra) -->
+            <button onclick="cycleLetterSpacing()" class="min-h-[36px] px-2 bg-stone-100 hover:bg-stone-200 hc-btn rounded-xl text-[11px] font-bold border border-stone-200 transition flex items-center" id="letterSpacingBtn" title="Ajustar espacio entre letras">
+                Espacio: Normal
+            </button>
+
+            <!-- Line Height (Interlineado) -->
+            <button onclick="cycleLineHeight()" class="min-h-[36px] px-2 bg-stone-100 hover:bg-stone-200 hc-btn rounded-xl text-[11px] font-bold border border-stone-200 transition flex items-center" id="lineHeightBtn" title="Ajustar altura de línea">
+                Línea: 1.6x
+            </button>
+
+            <!-- High Contrast Toggle Switch -->
+            <button onclick="toggleHighContrast()" class="min-h-[36px] px-2.5 bg-slate-900 text-white hc-btn rounded-xl text-xs font-bold hover:bg-black transition flex items-center gap-1" aria-label="Cambiar a modo alto contraste">
+                <i class="fa-solid fa-circle-half-stroke text-amber-400" aria-hidden="true"></i>
+                <span class="hidden md:inline">Contraste</span>
+            </button>
+
+            <!-- Folder Upload Toggle -->
+            <button onclick="toggleImageUploader()" class="min-h-[36px] px-2 bg-amber-100 hover:bg-amber-200 text-amber-900 hc-btn rounded-xl text-xs font-bold transition flex items-center gap-1" title="Cargar o cambiar imágenes">
+                <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+            </button>
+
+        </div>
+    </header>
+
+    <!-- LOCAL IMAGE MANUAL ASSIGNMENT PANEL -->
+    <section id="uploaderPanel" class="w-full max-w-6xl mx-auto my-1 bg-amber-50 hc-card border-2 border-dashed border-amber-300 rounded-2xl p-2.5 text-xs font-semibold text-amber-900 hidden shrink-0 z-10">
+        <div class="flex justify-between items-center mb-1">
+            <p class="font-bold text-xs"><i class="fa-solid fa-circle-info mr-1"></i> Selecciona tus propias imágenes si deseas reemplazarlas:</p>
+            <button onclick="toggleImageUploader()" class="font-bold text-red-600 hover:underline">✕ Cerrar</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[11px]">
+            <div><label class="block font-bold">1. tarea.jpg</label><input type="file" accept="image/*" onchange="loadLocalImage(event, 0)" class="w-full text-[10px]"></div>
+            <div><label class="block font-bold">2. primero.jpg</label><input type="file" accept="image/*" onchange="loadLocalImage(event, 1)" class="w-full text-[10px]"></div>
+            <div><label class="block font-bold">3. segundo.jpg</label><input type="file" accept="image/*" onchange="loadLocalImage(event, 2)" class="w-full text-[10px]"></div>
+            <div><label class="block font-bold">4. tercero.jpg</label><input type="file" accept="image/*" onchange="loadLocalImage(event, 3)" class="w-full text-[10px]"></div>
+            <div><label class="block font-bold">5. resultado.jpg</label><input type="file" accept="image/*" onchange="loadLocalImage(event, 4)" class="w-full text-[10px]"></div>
+        </div>
+    </section>
+
+    <!-- MAIN BOOK CONTAINER (COMPACT FLUID LAYOUT FOR SINGLE-SCREEN VIEWING) -->
+    <main class="w-full max-w-6xl mx-auto flex-grow flex flex-col justify-between my-1 overflow-hidden" role="main">
+        <article id="bookCard" class="bg-white hc-card rounded-2xl shadow-sm border border-stone-200 p-3 sm:p-4 flex flex-col justify-between h-full transition-all duration-300 overflow-hidden">
+            
+            <!-- STEP HEADER & PAGE INDICATOR -->
+            <div class="flex items-center justify-between border-b border-stone-100 pb-2 mb-2 shrink-0">
+                <span id="stepBadge" class="bg-blue-700 text-white hc-badge font-extrabold text-xs sm:text-sm px-3 py-1 rounded-full tracking-wide">
+                    PORTADA Y TAREA
+                </span>
+                
+                <span id="pageIndicator" class="text-xs sm:text-sm font-extrabold text-stone-500 hc-text bg-stone-100 px-2.5 py-0.5 rounded-lg" aria-live="polite">
+                    Página 1 de 5
+                </span>
+            </div>
+
+            <!-- CONTIGUITY LAYOUT: IMAGE & TEXT (RESIZES AUTOMATICALLY TO FIT SCREEN) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-center my-auto flex-grow overflow-hidden">
+                
+                <!-- LEFT SIDE: IMAGE CONTAINER -->
+                <div class="flex justify-center items-center bg-stone-50 hc-card p-2 rounded-xl border border-stone-200 h-full max-h-[42vh] shadow-inner overflow-hidden">
+                    <img id="bookImage" 
+                         src="tarea.jpg" 
+                         alt="Ana con una camiseta amarilla sosteniendo un plato cerca del caño de la cocina." 
+                         class="max-h-full w-auto max-w-full object-contain rounded-lg shadow-sm transition-all duration-300"
+                         onerror="handleImageError(this)">
+                </div>
+
+                <!-- RIGHT SIDE: TEXT & AUDIO CONTROLS -->
+                <div class="flex flex-col justify-center space-y-3 text-left my-auto overflow-hidden">
+                    
+                    <h2 id="pageTitle" class="text-xl sm:text-2xl font-black text-blue-900 hc-text leading-tight">
+                        Ana lava el plato
+                    </h2>
+                    
+                    <!-- MACROTYPE READABLE TEXT -->
+                    <div id="pageTextContainer" class="flex items-center">
+                        <p id="pageText" class="text-lg sm:text-xl md:text-2xl font-bold text-stone-800 hc-text">
+                            Tarea: Ana limpia el plato después de comer.
+                        </p>
+                    </div>
+
+                    <!-- TEXT-TO-SPEECH READ ALONG BUTTON -->
+                    <div class="pt-1 shrink-0">
+                        <button id="speakBtn" onclick="speakCurrentPage()" class="min-h-[44px] w-full md:w-auto inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-stone-900 font-black text-sm sm:text-base px-5 py-2.5 rounded-xl shadow-md hc-btn transition transform active:scale-95" aria-label="Escuchar la lectura de esta página">
+                            <i class="fa-solid fa-volume-high text-lg" aria-hidden="true"></i>
+                            <span id="speakBtnText">Escuchar página</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- STEP SELECTOR MINIATURE INDEX -->
+            <nav class="mt-2 pt-2 border-t border-stone-100 shrink-0" aria-label="Navegación por pasos del cuento">
+                <div class="grid grid-cols-5 gap-1.5" id="stepThumbnails">
+                    <!-- Dynamic step buttons -->
+                </div>
+            </nav>
+
+        </article>
+    </main>
+
+    <!-- NAVIGATION FOOTER -->
+    <footer class="w-full max-w-6xl mx-auto mt-1 shrink-0" role="contentinfo">
+        <div class="bg-white hc-card rounded-xl p-2 shadow-sm border border-stone-200 flex items-center justify-between gap-2">
+            
+            <!-- ANTERIOR BUTTON -->
+            <button id="prevBtn" onclick="navigatePage(-1)" class="min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center gap-1.5 bg-stone-200 hover:bg-stone-300 text-stone-900 font-extrabold px-3 py-2 rounded-xl hc-btn transition disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-sm sm:text-base" aria-label="Ir a la página anterior">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                <span>Anterior</span>
+            </button>
+
+            <!-- READ WHOLE STORY BUTTON -->
+            <button onclick="readEntireStory()" class="min-h-[44px] flex items-center justify-center gap-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-extrabold px-3 py-2 rounded-xl hc-btn transition active:scale-95 text-xs sm:text-sm" title="Escuchar todo el cuento de principio a fin">
+                <i class="fa-solid fa-play text-emerald-700" aria-hidden="true"></i>
+                <span>Cuento Completo</span>
+            </button>
+
+            <!-- RESTART BUTTON -->
+            <button onclick="goToPage(0)" class="min-h-[44px] flex items-center justify-center gap-1 bg-rose-100 hover:bg-rose-200 text-rose-900 font-extrabold px-3 py-2 rounded-xl hc-btn transition active:scale-95 text-xs sm:text-sm" aria-label="Reiniciar cuento">
+                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                <span class="hidden sm:inline">Inicio</span>
+            </button>
+
+            <!-- SIGUIENTE BUTTON -->
+            <button id="nextBtn" onclick="navigatePage(1)" class="min-h-[44px] min-w-[100px] sm:min-w-[120px] flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-3 py-2 rounded-xl hc-btn transition disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-sm sm:text-base" aria-label="Ir a la página siguiente">
+                <span>Siguiente</span>
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        /**
+         * Embedded SVG Data URLs for 100% Standalone Fallbacks
+         */
+        const embeddedImages = [
+            // Tarea: Ana lavando plato
+            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400' width='100%' height='100%'><rect width='600' height='400' fill='%23fef3c7'/><rect x='350' y='220' width='210' height='150' fill='%23e2e8f0' rx='10'/><path d='M 450 150 Q 450 220 480 220' stroke='%2364748b' stroke-width='14' fill='none' stroke-linecap='round'/><path d='M 480 220 L 480 260' stroke='%2338bdf8' stroke-width='8' stroke-dasharray='10,6' fill='none'/><circle cx='200' cy='130' r='55' fill='%23fde047'/><path d='M 145 185 C 145 185 200 210 255 185 L 280 380 L 120 380 Z' fill='%23fef08a'/><ellipse cx='340' cy='280' rx='70' ry='25' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='6'/><path d='M 320 265 Q 350 250 370 270' fill='%23fef08a' stroke='%23eab308' stroke-width='4'/><circle cx='340' cy='260' r='12' fill='%23e0f2fe' opacity='0.8'/></svg>",
+            
+            // Primero: Ana llevando plato al fregadero
+            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400' width='100%' height='100%'><rect width='600' height='400' fill='%23f1f5f9'/><rect x='400' y='180' width='180' height='200' fill='%23cbd5e1' rx='8'/><circle cx='220' cy='120' r='50' fill='%23fde047'/><path d='M 170 170 L 270 170 L 290 380 L 150 380 Z' fill='%2394a3b8'/><ellipse cx='320' cy='300' rx='65' ry='18' fill='%23ffffff' stroke='%2394a3b8' stroke-width='5'/><path d='M 230 250 Q 280 290 300 300' stroke='%23fde047' stroke-width='22' stroke-linecap='round' fill='none'/></svg>",
+            
+            // Segundo: Vertiendo jabón en la esponja
+            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400' width='100%' height='100%'><rect width='600' height='400' fill='%23f8fafc'/><rect x='180' y='240' width='240' height='100' rx='18' fill='%23facc15' stroke='%23ca8a04' stroke-width='6'/><circle cx='220' cy='270' r='6' fill='%23eab308'/><circle cx='320' cy='290' r='8' fill='%23eab308'/><circle cx='380' cy='260' r='7' fill='%23eab308'/><path d='M 280 60 L 320 60 L 310 130 L 290 130 Z' fill='%23e2e8f0'/><path d='M 270 130 L 330 130 L 340 200 L 260 200 Z' fill='%2338bdf8' opacity='0.7'/><path d='M 300 200 Q 300 230 300 245' stroke='%23bae6fd' stroke-width='10' stroke-linecap='round' fill='none'/></svg>",
+            
+            // Tercero: Frotando la esponja en el plato
+            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400' width='100%' height='100%'><rect width='600' height='400' fill='%23fef3c7'/><circle cx='180' cy='120' r='50' fill='%23fde047'/><path d='M 130 170 L 230 170 L 250 380 L 110 380 Z' fill='%23fef08a'/><ellipse cx='360' cy='260' rx='90' ry='70' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='6'/><rect x='320' y='220' width='70' height='45' rx='10' fill='%23facc15' stroke='%23ca8a04' stroke-width='4'/><circle cx='330' cy='210' r='14' fill='%23ffffff' opacity='0.9'/><circle cx='370' cy='200' r='18' fill='%23ffffff' opacity='0.9'/><circle cx='400' cy='225' r='12' fill='%23ffffff' opacity='0.9'/></svg>",
+            
+            // Resultado: Plato limpio guardado
+            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400' width='100%' height='100%'><rect width='600' height='400' fill='%23fff7ed'/><rect x='280' y='60' width='260' height='300' fill='%23b45309' rx='12'/><rect x='300' y='80' width='220' height='260' fill='%2378350f' rx='6'/><line x1='300' y1='200' x2='520' y2='200' stroke='%23b45309' stroke-width='12'/><ellipse cx='410' cy='185' rx='65' ry='16' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='5'/><circle cx='160' cy='130' r='50' fill='%23fde047'/><path d='M 110 180 L 210 180 L 230 380 L 90 380 Z' fill='%23fef08a'/></svg>"
+        ];
+
+        /**
+         * Story Data Model - Referencing Local Files Directly
+         */
+        const storyData = [
+            {
+                badge: "PORTADA Y TAREA",
+                badgeColor: "bg-blue-700",
+                title: "Ana lava el plato",
+                text: "Tarea: Ana limpia el plato después de comer.",
+                image: "tarea.jpg",
+                alt: "Ana lavando el plato con una esponja y agua corriendo del caño de la cocina."
+            },
+            {
+                badge: "PASO 1 • PRIMERO",
+                badgeColor: "bg-blue-800",
+                title: "Primer paso",
+                text: "Primero: Ana lleva el plato hacia el fregadero de la cocina.",
+                image: "primero.jpg",
+                alt: "Ana sosteniendo un plato con ambas manos en la cocina."
+            },
+            {
+                badge: "PASO 2 • SEGUNDO",
+                badgeColor: "bg-amber-600",
+                title: "Segundo paso",
+                text: "Segundo: Ana pone jabón líquido sobre la esponja amarilla.",
+                image: "segundo.jpg",
+                alt: "Echando jabón líquido transparente sobre una esponja amarilla de lavar platos."
+            },
+            {
+                badge: "PASO 3 • TERCERO",
+                badgeColor: "bg-emerald-700",
+                title: "Tercer paso",
+                text: "Tercero: Ana frota la esponja sobre el plato sucio.",
+                image: "tercero.jpg",
+                alt: "Ana lavando alegremente el plato con la esponja llena de jabón."
+            },
+            {
+                badge: "PASO 4 • RESULTADO",
+                badgeColor: "bg-purple-700",
+                title: "Resultado final",
+                text: "Resultado: El plato está limpio y Ana guarda el plato.",
+                image: "resultado.jpg",
+                alt: "Ana colocando el plato limpio en el estante del repostero de cocina."
+            }
+        ];
+
+        // State Variables
+        let currentPageIndex = 0;
+        let fontSizeOffset = 0;
+        let isRulerActive = false;
+
+        // Typography options
+        const letterSpacingOptions = [
+            { label: 'Espacio: Normal', value: '0.04em' },
+            { label: 'Espacio: Amplio', value: '0.12em' },
+            { label: 'Espacio: Max', value: '0.22em' }
+        ];
+        let letterSpacingIndex = 0;
+
+        const lineHeightOptions = [
+            { label: 'Línea: 1.6x', value: '1.6' },
+            { label: 'Línea: 1.9x', value: '1.9' },
+            { label: 'Línea: 2.3x', value: '2.3' }
+        ];
+        let lineHeightIndex = 0;
+
+        const synth = window.speechSynthesis;
+        let isReadingAll = false;
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderThumbnails();
+            renderPage();
+            initRulerControls();
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    navigatePage(1);
+                } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    navigatePage(-1);
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    speakCurrentPage();
+                }
+            });
+        });
+
+        // Theme Switcher (Calm Pastels)
+        function setTheme(themeClass) {
+            document.body.className = `h-full flex flex-col justify-between p-2 sm:p-3 md:p-4 ${themeClass}`;
+        }
+
+        // Font Family Switcher
+        function changeFontFamily(fontClass) {
+            document.body.classList.remove('font-lexend', 'font-roboto', 'font-arial', 'font-system');
+            document.body.classList.add(fontClass);
+        }
+
+        // Reading Ruler Logic
+        function toggleReadingRuler() {
+            isRulerActive = !isRulerActive;
+            const overlay = document.getElementById('readingRulerOverlay');
+            const btn = document.getElementById('rulerToggleBtn');
+
+            if (isRulerActive) {
+                overlay.style.display = 'block';
+                btn.classList.add('bg-amber-200', 'border-amber-400');
+                positionRulerAtText();
+            } else {
+                overlay.style.display = 'none';
+                btn.classList.remove('bg-amber-200', 'border-amber-400');
+            }
+        }
+
+        function positionRulerAtText() {
+            const pageText = document.getElementById('pageText');
+            const rect = pageText.getBoundingClientRect();
+            updateRulerPosition(rect.top + (rect.height / 2) - 32);
+        }
+
+        function updateRulerPosition(topY) {
+            const guide = document.getElementById('rulerGuide');
+            const rulerTop = document.getElementById('rulerTop');
+            const rulerBottom = document.getElementById('rulerBottom');
+            const height = 64; // Height of focus window
+
+            const maxY = window.innerHeight - height;
+            const clampedY = Math.max(0, Math.min(topY, maxY));
+
+            guide.style.top = clampedY + 'px';
+            rulerTop.style.height = clampedY + 'px';
+            rulerBottom.style.height = (window.innerHeight - clampedY - height) + 'px';
+        }
+
+        function initRulerControls() {
+            const guide = document.getElementById('rulerGuide');
+            let isDragging = false;
+
+            guide.addEventListener('mousedown', (e) => { isDragging = true; });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateRulerPosition(e.clientY - 32);
+                }
+            });
+
+            // Touch support for mobile/tablets
+            guide.addEventListener('touchstart', (e) => { isDragging = true; });
+            window.addEventListener('touchend', () => { isDragging = false; });
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length > 0) {
+                    updateRulerPosition(e.touches[0].clientY - 32);
+                }
+            });
+        }
+
+        // Typography Adjustments
+        function cycleLetterSpacing() {
+            letterSpacingIndex = (letterSpacingIndex + 1) % letterSpacingOptions.length;
+            const option = letterSpacingOptions[letterSpacingIndex];
+            document.getElementById('pageText').style.letterSpacing = option.value;
+            document.getElementById('letterSpacingBtn').innerText = option.label;
+        }
+
+        function cycleLineHeight() {
+            lineHeightIndex = (lineHeightIndex + 1) % lineHeightOptions.length;
+            const option = lineHeightOptions[lineHeightIndex];
+            document.getElementById('pageText').style.lineHeight = option.value;
+            document.getElementById('lineHeightBtn').innerText = option.label;
+        }
+
+        function adjustFontSize(delta) {
+            fontSizeOffset += delta;
+            if (fontSizeOffset < -4) fontSizeOffset = -4;
+            if (fontSizeOffset > 10) fontSizeOffset = 10;
+
+            const pageText = document.getElementById('pageText');
+            const pageTitle = document.getElementById('pageTitle');
+
+            pageText.style.fontSize = `${20 + fontSizeOffset}px`;
+            pageTitle.style.fontSize = `${24 + fontSizeOffset}px`;
+        }
+
+        function resetTypography() {
+            fontSizeOffset = 0;
+            letterSpacingIndex = 0;
+            lineHeightIndex = 0;
+
+            const pageText = document.getElementById('pageText');
+            const pageTitle = document.getElementById('pageTitle');
+
+            pageText.style.fontSize = '';
+            pageTitle.style.fontSize = '';
+            pageText.style.letterSpacing = letterSpacingOptions[0].value;
+            pageText.style.lineHeight = lineHeightOptions[0].value;
+
+            document.getElementById('letterSpacingBtn').innerText = letterSpacingOptions[0].label;
+            document.getElementById('lineHeightBtn').innerText = lineHeightOptions[0].label;
+        }
+
+        // TEXT-TO-SPEECH (Síntesis de voz DUA)
+        function stopSpeech() {
+            if (synth.speaking || synth.pending) {
+                synth.cancel();
+            }
+            isReadingAll = false;
+            const speakBtnText = document.getElementById('speakBtnText');
+            if (speakBtnText) speakBtnText.innerText = "Escuchar página";
+        }
+
+        function speakCurrentPage(onEndCallback = null) {
+            stopSpeech();
+
+            const currentStep = storyData[currentPageIndex];
+            const textToRead = `${currentStep.title}. ${currentStep.text}`;
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9; // Velocidad ligeramente pausada para accesibilidad
+
+            const pageTextEl = document.getElementById('pageText');
+            const speakBtnText = document.getElementById('speakBtnText');
+
+            utterance.onstart = () => {
+                if (pageTextEl) pageTextEl.classList.add('speech-reading');
+                if (speakBtnText) speakBtnText.innerText = "Leyendo...";
+            };
+
+            utterance.onend = () => {
+                if (pageTextEl) pageTextEl.classList.remove('speech-reading');
+                if (speakBtnText) speakBtnText.innerText = "Escuchar página";
+                if (onEndCallback && typeof onEndCallback === 'function') {
+                    onEndCallback();
+                }
+            };
+
+            utterance.onerror = () => {
+                if (pageTextEl) pageTextEl.classList.remove('speech-reading');
+                if (speakBtnText) speakBtnText.innerText = "Escuchar página";
+            };
+
+            synth.speak(utterance);
+        }
+
+        function readEntireStory() {
+            stopSpeech();
+            isReadingAll = true;
+            currentPageIndex = 0;
+            renderPage();
+
+            function readNextStep() {
+                if (!isReadingAll) return;
+                speakCurrentPage(() => {
+                    if (currentPageIndex < storyData.length - 1 && isReadingAll) {
+                        currentPageIndex++;
+                        renderPage();
+                        setTimeout(readNextStep, 800);
+                    } else {
+                        isReadingAll = false;
+                    }
+                });
+            }
+
+            readNextStep();
+        }
+
+        // Render Miniature Steps
+        function renderThumbnails() {
+            const container = document.getElementById('stepThumbnails');
+            container.innerHTML = '';
+
+            storyData.forEach((step, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `min-h-[36px] p-1 rounded-xl border-2 font-extrabold text-[11px] flex flex-col items-center justify-center transition hc-btn ${
+                    idx === currentPageIndex 
+                    ? 'border-blue-700 bg-blue-50 text-blue-900 shadow-sm' 
+                    : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
+                }`;
+                btn.onclick = () => goToPage(idx);
+                btn.setAttribute('aria-label', `Ir al paso ${idx + 1}`);
+                btn.innerHTML = `
+                    <span>Pág ${idx + 1}</span>
+                    <span class="text-[9px] opacity-80 truncate max-w-[65px] hidden sm:inline">${idx === 0 ? 'Tarea' : 'Paso ' + idx}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        // Render Current Page
+        function renderPage() {
+            stopSpeech();
+            const currentStep = storyData[currentPageIndex];
+
+            const badgeEl = document.getElementById('stepBadge');
+            badgeEl.innerText = currentStep.badge;
+            badgeEl.className = `${currentStep.badgeColor} text-white hc-badge font-extrabold text-xs sm:text-sm px-3 py-1 rounded-full tracking-wide`;
+
+            document.getElementById('pageIndicator').innerText = `Página ${currentPageIndex + 1} de ${storyData.length}`;
+            document.getElementById('pageTitle').innerText = currentStep.title;
+            
+            const pageTextEl = document.getElementById('pageText');
+            pageTextEl.innerText = currentStep.text;
+
+            const imgEl = document.getElementById('bookImage');
+            imgEl.src = currentStep.image;
+            imgEl.alt = currentStep.alt;
+
+            document.getElementById('prevBtn').disabled = (currentPageIndex === 0);
+            document.getElementById('nextBtn').disabled = (currentPageIndex === storyData.length - 1);
+
+            renderThumbnails();
+
+            if (isRulerActive) {
+                setTimeout(positionRulerAtText, 50);
+            }
+        }
+
+        // Navigation
+        function navigatePage(direction) {
+            const newIndex = currentPageIndex + direction;
+            if (newIndex >= 0 && newIndex < storyData.length) {
+                currentPageIndex = newIndex;
+                renderPage();
+            }
+        }
+
+        function goToPage(index) {
+            if (index >= 0 && index < storyData.length) {
+                currentPageIndex = index;
+                renderPage();
+            }
+        }
+
+        // Image Fallback to SVG illustration if local image is not found
+        function handleImageError(img) {
+            img.onerror = null;
+            if (embeddedImages[currentPageIndex]) {
+                img.src = embeddedImages[currentPageIndex];
+            } else {
+                img.src = `https://placehold.co/600x400/1E40AF/FFFFFF?text=Paso+${currentPageIndex+1}`;
+            }
+        }
+
+        // Local Image Loader Toggle
+        function toggleImageUploader() {
+            const panel = document.getElementById('uploaderPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function loadLocalImage(event, index) {
+            const file = event.target.files[0];
+            if (file && storyData[index]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storyData[index].image = e.target.result;
+                    if (index === currentPageIndex) {
+                        renderPage();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
